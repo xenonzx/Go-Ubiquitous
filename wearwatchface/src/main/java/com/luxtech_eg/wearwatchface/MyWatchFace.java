@@ -97,6 +97,11 @@ public class MyWatchFace extends CanvasWatchFaceService {
         Paint mColonPaint;
         Paint mMajorDegreePaint;
         Paint mMinorDegreePaint;
+        Paint mSeparator;
+        float separatorWidth;
+        float timeTextSize;
+        float dateTextSize;
+        float tempTextSize;
         private final Typeface BOLD_TYPEFACE =
                 Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
         private final Typeface NORMAL_TYPEFACE =
@@ -113,6 +118,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
         float mXOffset;
         float mYOffset;
         float mDateTopMargin;
+        float mSeparatorTopMargin;
+        float mSeparatorBottomMargin;
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
          * disable anti-aliasing in ambient mode.
@@ -132,6 +139,10 @@ public class MyWatchFace extends CanvasWatchFaceService {
             Resources resources = MyWatchFace.this.getResources();
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
             mDateTopMargin = resources.getDimension(R.dimen.date_top_margin);
+
+            mSeparatorTopMargin = resources.getDimension(R.dimen.line_separator_top_margin);
+            mSeparatorBottomMargin = resources.getDimension(R.dimen.line_separator_bottom_margin);
+
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(ContextCompat.getColor(MyWatchFace.this, R.color.background));
 
@@ -145,6 +156,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
             mColonPaint = mHourPaint;
             mMajorDegreePaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.major_temp_color), BOLD_TYPEFACE);
             mMinorDegreePaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.minor_temp_color), NORMAL_TYPEFACE);
+            mSeparator = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.separator_color));
+
+            separatorWidth = resources.getDimension(R.dimen.line_separator_width);
 
             mCalendar = Calendar.getInstance();
         }
@@ -215,9 +229,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
             Resources resources = MyWatchFace.this.getResources();
             boolean isRound = insets.isRound();
             mXOffset = resources.getDimension(isRound ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
-            float timeTextSize = resources.getDimension(R.dimen.digital_text_size);
-            float dateTextSize = resources.getDimension(R.dimen.date_text_size);
-            float tempTextSize = resources.getDimension(R.dimen.temperature_text_size);
+            timeTextSize = resources.getDimension(R.dimen.digital_text_size);
+            dateTextSize = resources.getDimension(R.dimen.date_text_size);
+            tempTextSize = resources.getDimension(R.dimen.temperature_text_size);
 
             mTextPaint.setTextSize(timeTextSize);
             mDatePaint.setTextSize(dateTextSize);
@@ -307,12 +321,29 @@ public class MyWatchFace extends CanvasWatchFaceService {
             x += mHourPaint.measureText(colon);
             canvas.drawText(minutes, x, y, mMinutePaint);
             x += mMinutePaint.measureText(minutes);
-
+            D
+            mHourPaint.getTextBounds(minutes,0,minutes.length(),);
             //drawing date
             x = mXOffset;
             y = mYOffset + mDateTopMargin;
             String date = new SimpleDateFormat("EEE, MMM d yyyy").format(mCalendar.getTime());
             canvas.drawText(date, x, y, mDatePaint);
+
+            //drawing separator
+            x = mXOffset;
+            y = mYOffset + mDateTopMargin + mSeparatorTopMargin;
+            canvas.drawLine(x, y, x + separatorWidth, y, mSeparator);
+
+            //drawing Temp major
+            x = mXOffset;
+            y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin ;
+            String majorTemp = "250";
+            canvas.drawText(majorTemp, x, y, mMajorDegreePaint);
+
+            //drawing Temp minor
+            x += mMajorDegreePaint.measureText(majorTemp);
+            String minorTemp = "160";
+            canvas.drawText(minorTemp, x, y, mMinorDegreePaint);
         }
 
         /**

@@ -6,6 +6,7 @@
     <color name="hours_color">@color/digital_text</color>
     <color name="minutes_color">@color/digital_text</color>
 
+    <color name="separator_color">@color/colorPrimaryLight</color>
     <color name="major_temp_color">@color/digital_text</color>
     <color name="minor_temp_color">@color/digital_text</color>
 
