@@ -37,6 +37,7 @@ import android.view.WindowInsets;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -94,6 +95,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
         Paint mHourPaint;
         Paint mMinutePaint;
         Paint mColonPaint;
+        Paint mMajorDegreePaint;
+        Paint mMinorDegreePaint;
         private final Typeface BOLD_TYPEFACE =
                 Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
         private final Typeface NORMAL_TYPEFACE =
@@ -136,10 +139,12 @@ public class MyWatchFace extends CanvasWatchFaceService {
             mTextPaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.digital_text));
 
 
-            mDatePaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.digital_date));
+            mDatePaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.date_color));
             mHourPaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.hours_color), BOLD_TYPEFACE);
             mMinutePaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.minutes_color), NORMAL_TYPEFACE);
             mColonPaint = mHourPaint;
+            mMajorDegreePaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.major_temp_color), BOLD_TYPEFACE);
+            mMinorDegreePaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.minor_temp_color), NORMAL_TYPEFACE);
 
             mCalendar = Calendar.getInstance();
         }
@@ -211,14 +216,20 @@ public class MyWatchFace extends CanvasWatchFaceService {
             boolean isRound = insets.isRound();
             mXOffset = resources.getDimension(isRound
                     ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
-            float textSize = resources.getDimension(isRound
+            float timeTextSize = resources.getDimension(isRound
                     ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
+            float dateTextSize = resources.getDimension(R.dimen.date_text_size);
+            float tempTextSize = resources.getDimension(R.dimen.temperature_text_size);
 
-            mTextPaint.setTextSize(textSize);
-            mDatePaint.setTextSize(textSize);
-            mHourPaint.setTextSize(textSize);
-            mMinutePaint.setTextSize(textSize);
-            mColonPaint.setTextSize(textSize);
+            mTextPaint.setTextSize(timeTextSize);
+            mDatePaint.setTextSize(dateTextSize);
+            mHourPaint.setTextSize(timeTextSize);
+            mMinutePaint.setTextSize(timeTextSize);
+            mColonPaint.setTextSize(timeTextSize);
+            mMajorDegreePaint.setTextSize(tempTextSize);
+            mMinorDegreePaint.setTextSize(tempTextSize);
+
+
         }
 
         @Override
@@ -298,6 +309,12 @@ public class MyWatchFace extends CanvasWatchFaceService {
             x += mHourPaint.measureText(colon);
             canvas.drawText(minutes, x, y, mMinutePaint);
             x += mMinutePaint.measureText(minutes);
+
+            //drawing date
+            x = mXOffset;
+            y = mYOffset + mYOffset;
+            String date = new SimpleDateFormat("EEE, MMM d yyyy").format(mCalendar.getTime());
+            canvas.drawText(date, x, y, mDatePaint);
         }
 
         /**

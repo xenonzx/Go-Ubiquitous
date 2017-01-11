@@ -2,9 +2,12 @@
 <resources>
     <color name="background">@color/colorPrimary</color>
 
-    <color name="digital_date">@color/colorPrimaryLight</color>
+    <color name="date_color">@color/digital_text</color>
     <color name="hours_color">@color/digital_text</color>
     <color name="minutes_color">@color/digital_text</color>
+
+    <color name="major_temp_color">@color/digital_text</color>
+    <color name="minor_temp_color">@color/digital_text</color>
 
     <color name="colorPrimary">#03A9F4</color>
     <color name="colorPrimaryDark">#0288D1</color>
