@@ -2,7 +2,7 @@
 <resources>
     <color name="background">@color/colorPrimary</color>
 
-    <color name="date_color">@color/digital_text</color>
+    <color name="date_color">@color/colorPrimaryLight</color>
     <color name="hours_color">@color/digital_text</color>
     <color name="minutes_color">@color/digital_text</color>
 

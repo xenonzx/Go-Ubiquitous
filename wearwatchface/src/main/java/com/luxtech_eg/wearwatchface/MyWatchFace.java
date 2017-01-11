@@ -112,7 +112,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
         };
         float mXOffset;
         float mYOffset;
-
+        float mDateTopMargin;
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
          * disable anti-aliasing in ambient mode.
@@ -131,7 +131,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
                     .build());
             Resources resources = MyWatchFace.this.getResources();
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
-
+            mDateTopMargin = resources.getDimension(R.dimen.date_top_margin);
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(ContextCompat.getColor(MyWatchFace.this, R.color.background));
 
@@ -215,7 +215,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             Resources resources = MyWatchFace.this.getResources();
             boolean isRound = insets.isRound();
             mXOffset = resources.getDimension(isRound ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
-            float timeTextSize = resources.getDimension( R.dimen.digital_text_size);
+            float timeTextSize = resources.getDimension(R.dimen.digital_text_size);
             float dateTextSize = resources.getDimension(R.dimen.date_text_size);
             float tempTextSize = resources.getDimension(R.dimen.temperature_text_size);
 
@@ -310,7 +310,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             //drawing date
             x = mXOffset;
-            y = mYOffset + mYOffset;
+            y = mYOffset + mDateTopMargin;
             String date = new SimpleDateFormat("EEE, MMM d yyyy").format(mCalendar.getTime());
             canvas.drawText(date, x, y, mDatePaint);
         }
