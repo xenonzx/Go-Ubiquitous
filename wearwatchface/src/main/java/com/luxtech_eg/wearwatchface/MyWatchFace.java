@@ -90,6 +90,14 @@ public class MyWatchFace extends CanvasWatchFaceService {
         boolean mRegisteredTimeZoneReceiver = false;
         Paint mBackgroundPaint;
         Paint mTextPaint;
+        Paint mDatePaint;
+        Paint mHourPaint;
+        Paint mMinutePaint;
+        Paint mColonPaint;
+        private final Typeface BOLD_TYPEFACE =
+                Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
+        private final Typeface NORMAL_TYPEFACE =
+                Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
         boolean mAmbient;
         Calendar mCalendar;
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
@@ -127,6 +135,12 @@ public class MyWatchFace extends CanvasWatchFaceService {
             mTextPaint = new Paint();
             mTextPaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.digital_text));
 
+
+            mDatePaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.digital_date));
+            mHourPaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.hours_color), BOLD_TYPEFACE);
+            mMinutePaint = createTextPaint(ContextCompat.getColor(MyWatchFace.this, R.color.minutes_color), NORMAL_TYPEFACE);
+            mColonPaint = mHourPaint;
+
             mCalendar = Calendar.getInstance();
         }
 
@@ -140,6 +154,14 @@ public class MyWatchFace extends CanvasWatchFaceService {
             Paint paint = new Paint();
             paint.setColor(textColor);
             paint.setTypeface(NORMAL_TYPEFACE);
+            paint.setAntiAlias(true);
+            return paint;
+        }
+
+        private Paint createTextPaint(int defaultInteractiveColor, Typeface typeface) {
+            Paint paint = new Paint();
+            paint.setColor(defaultInteractiveColor);
+            paint.setTypeface(typeface);
             paint.setAntiAlias(true);
             return paint;
         }
@@ -256,12 +278,22 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
             }
 
-            // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
+            float x = mXOffset;
+            float y = mYOffset;
+
             long now = System.currentTimeMillis();
             mCalendar.setTimeInMillis(now);
 
-            String text = String.format("%d:%02d", mCalendar.get(Calendar.HOUR), mCalendar.get(Calendar.MINUTE));
-            canvas.drawText(text, mXOffset, mYOffset, mTextPaint);
+            // drawing the clock
+            String hours = String.format("%d", mCalendar.get(Calendar.HOUR));
+            String colon = String.format(":");
+            String minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE));
+            canvas.drawText(hours, x, y, mHourPaint);
+            x += mHourPaint.measureText(hours);
+            canvas.drawText(colon, x, y, mColonPaint);
+            x += mHourPaint.measureText(colon);
+            canvas.drawText(minutes, x, y, mMinutePaint);
+            x += mMinutePaint.measureText(minutes);
         }
 
         /**
