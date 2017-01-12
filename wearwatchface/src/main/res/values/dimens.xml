@@ -15,6 +15,12 @@
 
     <dimen name="line_separator_width">30dp</dimen>
 
+    <dimen name="temp_image_width">35dp</dimen>
+    <dimen name="temp_image_height">35dp</dimen>
+
+    <dimen name="temp_image_margin_top">10dp</dimen>
+    <dimen name="temp_image_margin_right">30dp</dimen>
+
     <dimen name="date_text_size">17dp</dimen>
     <dimen name="temperature_text_size">30dp</dimen>
 </resources>

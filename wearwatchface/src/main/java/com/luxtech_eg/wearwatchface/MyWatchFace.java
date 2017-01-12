@@ -123,6 +123,12 @@ public class MyWatchFace extends CanvasWatchFaceService {
         float mSeparatorBottomMargin;
         float mTempBaseToTop;
 
+        float mTempImageWidth;
+        float mTempImageHeight;
+
+        float mTempImageMarginTop;
+        float mTempImageMarginRight;
+
         Rect tempBounds = new Rect(0, 0, 0, 0);
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -147,6 +153,12 @@ public class MyWatchFace extends CanvasWatchFaceService {
             mSeparatorTopMargin = resources.getDimension(R.dimen.line_separator_top_margin);
             mSeparatorBottomMargin = resources.getDimension(R.dimen.line_separator_bottom_margin);
             mTempBaseToTop = resources.getDimension(R.dimen.temp_base_to_top);
+
+            mTempImageHeight = resources.getDimension(R.dimen.temp_image_height);
+            mTempImageWidth = resources.getDimension(R.dimen.temp_image_width);
+
+            mTempImageMarginTop = resources.getDimension(R.dimen.temp_image_margin_top);
+            mTempImageMarginRight = resources.getDimension(R.dimen.temp_image_margin_right);
 
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(ContextCompat.getColor(MyWatchFace.this, R.color.background));
@@ -339,8 +351,16 @@ public class MyWatchFace extends CanvasWatchFaceService {
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin;
             canvas.drawLine(x, y, x + separatorWidth, y, mSeparator);
 
-            //drawing Temp major
+            //drawing image
             x = mXOffset;
+            y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop - mTempImageHeight + mTempImageMarginTop;
+
+            Drawable d = getResources().getDrawable(R.drawable.art_rain, null);
+            d.setBounds((int) x, (int) y, (int) x + (int) mTempImageWidth, (int) y + (int) mTempImageHeight);
+            d.draw(canvas);
+
+            //drawing Temp major
+            x = mXOffset + mTempImageWidth + mTempImageMarginRight;
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop;
             String majorTemp = String.format(getString(R.string.format_temperature), 25);
             canvas.drawText(majorTemp, x, y, mMajorDegreePaint);
@@ -349,10 +369,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             x += mMajorDegreePaint.measureText(majorTemp);
             String minorTemp = String.format(getString(R.string.format_temperature), 16);
             canvas.drawText(minorTemp, x, y, mMinorDegreePaint);
-            //drawing image
-            Drawable d = getResources().getDrawable(R.drawable.art_rain, null);
-            d.setBounds((int) x, (int) y, (int) x + (int) mTempBaseToTop, (int) y + (int) mTempBaseToTop);
-            d.draw(canvas);
+
         }
 
         /**
