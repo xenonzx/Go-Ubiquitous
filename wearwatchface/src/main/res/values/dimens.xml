@@ -11,6 +11,8 @@
 
     <dimen name="line_separator_top_margin">@dimen/standard_margin</dimen>
     <dimen name="line_separator_bottom_margin">@dimen/standard_margin</dimen>
+    <dimen name="temp_base_to_top">@dimen/standard_margin</dimen>
+
     <dimen name="line_separator_width">30dp</dimen>
 
     <dimen name="date_text_size">17dp</dimen>

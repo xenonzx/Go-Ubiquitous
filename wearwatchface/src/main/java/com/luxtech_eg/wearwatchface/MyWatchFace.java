@@ -120,6 +120,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
         float mDateTopMargin;
         float mSeparatorTopMargin;
         float mSeparatorBottomMargin;
+        float mTempBaseToTop;
+
+        Rect tempBounds = new Rect(0, 0, 0, 0);
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
          * disable anti-aliasing in ambient mode.
@@ -142,6 +145,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             mSeparatorTopMargin = resources.getDimension(R.dimen.line_separator_top_margin);
             mSeparatorBottomMargin = resources.getDimension(R.dimen.line_separator_bottom_margin);
+            mTempBaseToTop = resources.getDimension(R.dimen.temp_base_to_top);
 
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(ContextCompat.getColor(MyWatchFace.this, R.color.background));
@@ -321,8 +325,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
             x += mHourPaint.measureText(colon);
             canvas.drawText(minutes, x, y, mMinutePaint);
             x += mMinutePaint.measureText(minutes);
-            D
-            mHourPaint.getTextBounds(minutes,0,minutes.length(),);
+
+
             //drawing date
             x = mXOffset;
             y = mYOffset + mDateTopMargin;
@@ -336,8 +340,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             //drawing Temp major
             x = mXOffset;
-            y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin ;
-            String majorTemp = "250";
+            y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop;
+            String majorTemp = String.format(getString(R.string.te));
             canvas.drawText(majorTemp, x, y, mMajorDegreePaint);
 
             //drawing Temp minor
