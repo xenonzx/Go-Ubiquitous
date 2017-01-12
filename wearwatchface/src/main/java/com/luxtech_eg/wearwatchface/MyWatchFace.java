@@ -341,12 +341,12 @@ public class MyWatchFace extends CanvasWatchFaceService {
             //drawing Temp major
             x = mXOffset;
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop;
-            String majorTemp = String.format(getString(R.string.te));
+            String majorTemp = String.format(getString(R.string.format_temperature), 25);
             canvas.drawText(majorTemp, x, y, mMajorDegreePaint);
 
             //drawing Temp minor
             x += mMajorDegreePaint.measureText(majorTemp);
-            String minorTemp = "160";
+            String minorTemp = String.format(getString(R.string.format_temperature), 16);
             canvas.drawText(minorTemp, x, y, mMinorDegreePaint);
         }
 

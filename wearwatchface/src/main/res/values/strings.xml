@@ -1,5 +1,8 @@
-<resources>
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
     <string name="app_name">Go Ubiquitous</string>
     <string name="message">Watch face tapped</string>
     <string name="my_digital_name">Go Ubiquitous</string>
+    <string name="format_temperature">
+        <xliff:g id="temp">%1d</xliff:g>\u00B0
+    </string>
 </resources>
