@@ -26,6 +26,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -348,6 +349,10 @@ public class MyWatchFace extends CanvasWatchFaceService {
             x += mMajorDegreePaint.measureText(majorTemp);
             String minorTemp = String.format(getString(R.string.format_temperature), 16);
             canvas.drawText(minorTemp, x, y, mMinorDegreePaint);
+            //drawing image
+            Drawable d = getResources().getDrawable(R.drawable.art_rain, null);
+            d.setBounds((int) x, (int) y, (int) x + (int) mTempBaseToTop, (int) y + (int) mTempBaseToTop);
+            d.draw(canvas);
         }
 
         /**
