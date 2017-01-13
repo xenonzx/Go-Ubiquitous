@@ -8,7 +8,7 @@
 
     <color name="separator_color">@color/colorPrimaryLight</color>
     <color name="major_temp_color">@color/digital_text</color>
-    <color name="minor_temp_color">@color/digital_text</color>
+    <color name="minor_temp_color">@color/colorPrimaryLight</color>
 
     <color name="colorPrimary">#03A9F4</color>
     <color name="colorPrimaryDark">#0288D1</color>

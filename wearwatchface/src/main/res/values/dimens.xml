@@ -19,7 +19,9 @@
     <dimen name="temp_image_height">35dp</dimen>
 
     <dimen name="temp_image_margin_top">10dp</dimen>
-    <dimen name="temp_image_margin_right">30dp</dimen>
+    <dimen name="major_temp_horizontal_margin">20dp</dimen>
+    <dimen name="temp_image_margin_right">@dimen/major_temp_horizontal_margin</dimen>
+    <dimen name="temp_minor_margin_left">@dimen/major_temp_horizontal_margin</dimen>
 
     <dimen name="date_text_size">17dp</dimen>
     <dimen name="temperature_text_size">30dp</dimen>

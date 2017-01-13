@@ -128,6 +128,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         float mTempImageMarginTop;
         float mTempImageMarginRight;
+        float mTempMinorMarginLeft;
 
         Rect tempBounds = new Rect(0, 0, 0, 0);
         /**
@@ -159,7 +160,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             mTempImageMarginTop = resources.getDimension(R.dimen.temp_image_margin_top);
             mTempImageMarginRight = resources.getDimension(R.dimen.temp_image_margin_right);
-
+            mTempMinorMarginLeft = resources.getDimension(R.dimen.temp_image_margin_right);
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(ContextCompat.getColor(MyWatchFace.this, R.color.background));
 
@@ -357,9 +358,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
             canvas.drawLine(x, y, x + separatorWidth, y, mSeparator);
 
             //drawing image
-            String majorTemp = String.format(getString(R.string.format_temperature), 5);
-            String minorTemp = String.format(getString(R.string.format_temperature), 1);
-            x = boundWidth / 2 - (mTempImageWidth + mTempImageMarginRight + mMajorDegreePaint.measureText(majorTemp) + mMinorDegreePaint.measureText(minorTemp)) / 2;
+            String majorTemp = String.format(getString(R.string.format_temperature), 25);
+            String minorTemp = String.format(getString(R.string.format_temperature), 15);
+            x = boundWidth / 2 - (mTempImageWidth + mTempImageMarginRight + mMajorDegreePaint.measureText(majorTemp) + mTempMinorMarginLeft + mMinorDegreePaint.measureText(minorTemp)) / 2;
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop - mTempImageHeight + mTempImageMarginTop;
 
             Drawable d = getResources().getDrawable(R.drawable.art_rain, null);
@@ -372,7 +373,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             canvas.drawText(majorTemp, x, y, mMajorDegreePaint);
 
             //drawing Temp minor
-            x += mMajorDegreePaint.measureText(majorTemp);
+            x += mTempMinorMarginLeft + mMajorDegreePaint.measureText(majorTemp);
             canvas.drawText(minorTemp, x, y, mMinorDegreePaint);
 
         }
