@@ -357,7 +357,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
             canvas.drawLine(x, y, x + separatorWidth, y, mSeparator);
 
             //drawing image
-            x = mXOffset;
+            String majorTemp = String.format(getString(R.string.format_temperature), 5);
+            String minorTemp = String.format(getString(R.string.format_temperature), 1);
+            x = boundWidth / 2 - (mTempImageWidth + mTempImageMarginRight + mMajorDegreePaint.measureText(majorTemp) + mMinorDegreePaint.measureText(minorTemp)) / 2;
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop - mTempImageHeight + mTempImageMarginTop;
 
             Drawable d = getResources().getDrawable(R.drawable.art_rain, null);
@@ -367,12 +369,10 @@ public class MyWatchFace extends CanvasWatchFaceService {
             //drawing Temp major
             x = x + mTempImageWidth + mTempImageMarginRight;
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop;
-            String majorTemp = String.format(getString(R.string.format_temperature), 5);
             canvas.drawText(majorTemp, x, y, mMajorDegreePaint);
 
             //drawing Temp minor
             x += mMajorDegreePaint.measureText(majorTemp);
-            String minorTemp = String.format(getString(R.string.format_temperature), 1);
             canvas.drawText(minorTemp, x, y, mMinorDegreePaint);
 
         }
