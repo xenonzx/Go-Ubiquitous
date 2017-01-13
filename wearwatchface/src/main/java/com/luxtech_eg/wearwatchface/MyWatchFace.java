@@ -316,14 +316,15 @@ public class MyWatchFace extends CanvasWatchFaceService {
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
             // Draw the background.
+            float boundWidth = bounds.width();
+            float boundheight = bounds.width();
+
             if (isInAmbientMode()) {
                 canvas.drawColor(Color.BLACK);
             } else {
                 canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
             }
 
-            float x = mXOffset;
-            float y = mYOffset;
 
             long now = System.currentTimeMillis();
             mCalendar.setTimeInMillis(now);
@@ -332,6 +333,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
             String hours = String.format("%d", mCalendar.get(Calendar.HOUR));
             String colon = String.format(":");
             String minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE));
+
+            float x = boundWidth / 2 - (mHourPaint.measureText(hours) + mHourPaint.measureText(colon) + mMinutePaint.measureText(minutes))/2;
+            float y = mYOffset;
             canvas.drawText(hours, x, y, mHourPaint);
             x += mHourPaint.measureText(hours);
             canvas.drawText(colon, x, y, mColonPaint);
