@@ -334,7 +334,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             String colon = String.format(":");
             String minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE));
 
-            float x = boundWidth / 2 - (mHourPaint.measureText(hours) + mHourPaint.measureText(colon) + mMinutePaint.measureText(minutes))/2;
+            float x = boundWidth / 2 - (mHourPaint.measureText(hours) + mHourPaint.measureText(colon) + mMinutePaint.measureText(minutes)) / 2;
             float y = mYOffset;
             canvas.drawText(hours, x, y, mHourPaint);
             x += mHourPaint.measureText(hours);
@@ -345,13 +345,14 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
 
             //drawing date
-            x = mXOffset;
-            y = mYOffset + mDateTopMargin;
+
             String date = new SimpleDateFormat("EEE, MMM d yyyy").format(mCalendar.getTime());
+            x = boundWidth / 2 - mDatePaint.measureText(date) / 2;
+            y = mYOffset + mDateTopMargin;
             canvas.drawText(date, x, y, mDatePaint);
 
             //drawing separator
-            x = mXOffset;
+            x = boundWidth / 2 - separatorWidth / 2;
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin;
             canvas.drawLine(x, y, x + separatorWidth, y, mSeparator);
 
@@ -364,14 +365,14 @@ public class MyWatchFace extends CanvasWatchFaceService {
             d.draw(canvas);
 
             //drawing Temp major
-            x = mXOffset + mTempImageWidth + mTempImageMarginRight;
+            x = x + mTempImageWidth + mTempImageMarginRight;
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop;
-            String majorTemp = String.format(getString(R.string.format_temperature), 25);
+            String majorTemp = String.format(getString(R.string.format_temperature), 5);
             canvas.drawText(majorTemp, x, y, mMajorDegreePaint);
 
             //drawing Temp minor
             x += mMajorDegreePaint.measureText(majorTemp);
-            String minorTemp = String.format(getString(R.string.format_temperature), 16);
+            String minorTemp = String.format(getString(R.string.format_temperature), 1);
             canvas.drawText(minorTemp, x, y, mMinorDegreePaint);
 
         }
