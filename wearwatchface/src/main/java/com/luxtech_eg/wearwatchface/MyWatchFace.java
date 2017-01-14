@@ -105,6 +105,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
     private class Engine extends CanvasWatchFaceService.Engine implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
         private GoogleApiClient googleApiClient;
+        //the DataApi.DataListener - this will get notified every time we change something in the data layer
         private final DataApi.DataListener onDataChangedListener = new DataApi.DataListener() {
             @Override
             public void onDataChanged(DataEventBuffer dataEvents) {
@@ -118,6 +119,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 dataEvents.release();
             }
         };
+        //a ResultCallback - this will notify us every time the googleApiClient connects
         private final ResultCallback<DataItemBuffer> onConnectedResultCallback = new ResultCallback<DataItemBuffer>() {
             @Override
             public void onResult(DataItemBuffer dataItems) {
