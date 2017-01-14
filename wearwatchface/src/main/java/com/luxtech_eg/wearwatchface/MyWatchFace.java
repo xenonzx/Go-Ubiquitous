@@ -40,6 +40,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.Wearable;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -54,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
-        String TAG = MyWatchFace.class.getSimpleName();
+    String TAG = MyWatchFace.class.getSimpleName();
     /**
      * Update rate in milliseconds for interactive mode. We update once a second since seconds are
      * displayed in interactive mode.
@@ -65,25 +66,11 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
      * Handler message id for updating the time periodically in interactive mode.
      */
     private static final int MSG_UPDATE_TIME = 0;
+    private GoogleApiClient googleApiClient;
 
     @Override
     public Engine onCreateEngine() {
         return new Engine();
-    }
-
-    @Override
-    public void onConnected(Bundle bundle) {
-        Log.d(TAG, "connected GoogleAPI");
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.e(TAG, "suspended GoogleAPI");
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.e(TAG, "connectionFailed GoogleAPI");
     }
 
 
@@ -160,6 +147,11 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
         @Override
         public void onCreate(SurfaceHolder holder) {
             super.onCreate(holder);
+            googleApiClient = new GoogleApiClient.Builder(MyWatchFace.this)
+                    .addApi(Wearable.API)
+                    .addConnectionCallbacks(MyWatchFace.this)
+                    .addOnConnectionFailedListener(MyWatchFace.this)
+                    .build();
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(MyWatchFace.this)
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_VARIABLE)
@@ -204,6 +196,7 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
         @Override
         public void onDestroy() {
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
+            releaseGoogleApiClient();
             super.onDestroy();
         }
 
@@ -237,10 +230,26 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
                 unregisterReceiver();
             }
 
+            if (visible) {
+
+                googleApiClient.connect();
+            } else {
+
+                releaseGoogleApiClient();
+            }
+
+
             // Whether the timer should be running depends on whether we're visible (as well as
             // whether we're in ambient mode), so we may need to start or stop the timer.
             updateTimer();
         }
+
+        private void releaseGoogleApiClient() {
+            if (googleApiClient != null && googleApiClient.isConnected()) {
+                googleApiClient.disconnect();
+            }
+        }
+
 
         private void registerReceiver() {
             if (mRegisteredTimeZoneReceiver) {
@@ -429,5 +438,20 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
             }
         }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.d(TAG, "connected GoogleAPI");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.e(TAG, "suspended GoogleAPI");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.e(TAG, "connectionFailed GoogleAPI");
     }
 }
