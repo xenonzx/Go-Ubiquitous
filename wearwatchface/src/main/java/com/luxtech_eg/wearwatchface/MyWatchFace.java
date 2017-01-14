@@ -109,6 +109,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
         private final DataApi.DataListener onDataChangedListener = new DataApi.DataListener() {
             @Override
             public void onDataChanged(DataEventBuffer dataEvents) {
+                Log.v(TAG, "onDataChanged");
                 for (DataEvent event : dataEvents) {
                     if (event.getType() == DataEvent.TYPE_CHANGED) {
                         DataItem item = event.getDataItem();
@@ -153,8 +154,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
         boolean mAmbient;
         Calendar mCalendar;
-        int mDataTempMajor;
-        int mDataTempMinor;
+        double mDataTempMajor;
+        double mDataTempMinor;
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -427,8 +428,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
             canvas.drawLine(x, y, x + separatorWidth, y, mSeparator);
 
             //drawing image
-            String majorTemp = String.format(getString(R.string.format_temperature), 25);
-            String minorTemp = String.format(getString(R.string.format_temperature), 15);
+            String majorTemp = String.format(getString(R.string.format_temperature), (int) mDataTempMajor);
+            String minorTemp = String.format(getString(R.string.format_temperature), (int) mDataTempMinor);
             x = boundWidth / 2 - (mTempImageWidth + mTempImageMarginRight + mMajorDegreePaint.measureText(majorTemp) + mTempMinorMarginLeft + mMinorDegreePaint.measureText(minorTemp)) / 2;
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop - mTempImageHeight + mTempImageMarginTop;
 
@@ -481,15 +482,15 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         private void processConfigurationFor(DataItem item) {
 
-
+            Log.v(TAG, "processConfigurationFor");
             if ("/ubiquitous_watch_face_config".equals(item.getUri().getPath())) {
                 DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
                 if (dataMap.containsKey("KEY_MAJOR_TEMP")) {
-                    mDataTempMajor = dataMap.getInt("KEY_MAJOR_TEMP");
+                    mDataTempMajor = dataMap.getDouble("KEY_MAJOR_TEMP");
                 }
 
                 if (dataMap.containsKey("KEY_MINOR_TEMP")) {
-                    mDataTempMinor = dataMap.getInt("KEY_MINOR_TEMP");
+                    mDataTempMinor = dataMap.getDouble("KEY_MINOR_TEMP");
                 }
                 invalidate();
 
