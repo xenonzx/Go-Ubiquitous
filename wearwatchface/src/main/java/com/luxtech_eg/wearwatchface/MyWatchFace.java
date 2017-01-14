@@ -40,6 +40,14 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataItemBuffer;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
 
 import java.lang.ref.WeakReference;
@@ -52,7 +60,7 @@ import java.util.concurrent.TimeUnit;
  * Digital watch face with seconds. In ambient mode, the seconds aren't displayed. On devices with
  * low-bit ambient mode, the text is drawn without anti-aliasing in ambient mode.
  */
-public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MyWatchFace extends CanvasWatchFaceService {
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
     String TAG = MyWatchFace.class.getSimpleName();
@@ -66,7 +74,7 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
      * Handler message id for updating the time periodically in interactive mode.
      */
     private static final int MSG_UPDATE_TIME = 0;
-    private GoogleApiClient googleApiClient;
+
 
     @Override
     public Engine onCreateEngine() {
@@ -75,6 +83,7 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
 
 
     private static class EngineHandler extends Handler {
+
         private final WeakReference<MyWatchFace.Engine> mWeakReference;
 
         public EngineHandler(MyWatchFace.Engine reference) {
@@ -94,7 +103,33 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
         }
     }
 
-    private class Engine extends CanvasWatchFaceService.Engine {
+    private class Engine extends CanvasWatchFaceService.Engine implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        private GoogleApiClient googleApiClient;
+        private final DataApi.DataListener onDataChangedListener = new DataApi.DataListener() {
+            @Override
+            public void onDataChanged(DataEventBuffer dataEvents) {
+                for (DataEvent event : dataEvents) {
+                    if (event.getType() == DataEvent.TYPE_CHANGED) {
+                        DataItem item = event.getDataItem();
+                        processConfigurationFor(item);
+                    }
+                }
+
+                dataEvents.release();
+            }
+        };
+        private final ResultCallback<DataItemBuffer> onConnectedResultCallback = new ResultCallback<DataItemBuffer>() {
+            @Override
+            public void onResult(DataItemBuffer dataItems) {
+                for (DataItem item : dataItems) {
+                    processConfigurationFor(item);
+                }
+
+                dataItems.release();
+                invalidate();
+            }
+        };
+
         final Handler mUpdateTimeHandler = new EngineHandler(this);
         boolean mRegisteredTimeZoneReceiver = false;
         Paint mBackgroundPaint;
@@ -116,6 +151,8 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
                 Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
         boolean mAmbient;
         Calendar mCalendar;
+        int mDataTempMajor;
+        int mDataTempMinor;
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -149,8 +186,8 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
             super.onCreate(holder);
             googleApiClient = new GoogleApiClient.Builder(MyWatchFace.this)
                     .addApi(Wearable.API)
-                    .addConnectionCallbacks(MyWatchFace.this)
-                    .addOnConnectionFailedListener(MyWatchFace.this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
                     .build();
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(MyWatchFace.this)
@@ -246,6 +283,7 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
 
         private void releaseGoogleApiClient() {
             if (googleApiClient != null && googleApiClient.isConnected()) {
+                Wearable.DataApi.removeListener(googleApiClient, onDataChangedListener);
                 googleApiClient.disconnect();
             }
         }
@@ -438,20 +476,41 @@ public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClie
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
             }
         }
+
+        private void processConfigurationFor(DataItem item) {
+
+
+            if ("/ubiquitous_watch_face_config".equals(item.getUri().getPath())) {
+                DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                if (dataMap.containsKey("KEY_MAJOR_TEMP")) {
+                    mDataTempMajor = dataMap.getInt("KEY_MAJOR_TEMP");
+                }
+
+                if (dataMap.containsKey("KEY_MINOR_TEMP")) {
+                    mDataTempMinor = dataMap.getInt("KEY_MINOR_TEMP");
+                }
+                invalidate();
+
+            }
+        }
+
+        @Override
+        public void onConnected(Bundle bundle) {
+            Log.d(TAG, "connected GoogleAPI");
+            Wearable.DataApi.addListener(googleApiClient, onDataChangedListener);
+            Wearable.DataApi.getDataItems(googleApiClient).setResultCallback(onConnectedResultCallback);
+        }
+
+        @Override
+        public void onConnectionSuspended(int i) {
+            Log.e(TAG, "suspended GoogleAPI");
+        }
+
+        @Override
+        public void onConnectionFailed(ConnectionResult connectionResult) {
+            Log.e(TAG, "connectionFailed GoogleAPI");
+        }
     }
 
-    @Override
-    public void onConnected(Bundle bundle) {
-        Log.d(TAG, "connected GoogleAPI");
-    }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.e(TAG, "suspended GoogleAPI");
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.e(TAG, "connectionFailed GoogleAPI");
-    }
 }
