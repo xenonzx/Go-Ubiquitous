@@ -33,9 +33,13 @@ import android.os.Message;
 import android.support.v4.content.ContextCompat;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -47,10 +51,10 @@ import java.util.concurrent.TimeUnit;
  * Digital watch face with seconds. In ambient mode, the seconds aren't displayed. On devices with
  * low-bit ambient mode, the text is drawn without anti-aliasing in ambient mode.
  */
-public class MyWatchFace extends CanvasWatchFaceService {
+public class MyWatchFace extends CanvasWatchFaceService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
-
+        String TAG = MyWatchFace.class.getSimpleName();
     /**
      * Update rate in milliseconds for interactive mode. We update once a second since seconds are
      * displayed in interactive mode.
@@ -66,6 +70,22 @@ public class MyWatchFace extends CanvasWatchFaceService {
     public Engine onCreateEngine() {
         return new Engine();
     }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.d(TAG, "connected GoogleAPI");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.e(TAG, "suspended GoogleAPI");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.e(TAG, "connectionFailed GoogleAPI");
+    }
+
 
     private static class EngineHandler extends Handler {
         private final WeakReference<MyWatchFace.Engine> mWeakReference;
