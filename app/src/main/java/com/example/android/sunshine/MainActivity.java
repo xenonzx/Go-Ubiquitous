@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private ProgressBar mLoadingIndicator;
     private GoogleApiClient googleApiClient;
+    PutDataRequest putDataReq;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -267,7 +268,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mForecastAdapter.swapCursor(data);
         if (mPosition == RecyclerView.NO_POSITION) mPosition = 0;
         mRecyclerView.smoothScrollToPosition(mPosition);
-        if (data.getCount() != 0) showWeatherDataView();
+        if (data.getCount() != 0) {
+            showWeatherDataView();
+            data.moveToFirst();
+            onTempSet(data.getDouble(MainActivity.INDEX_WEATHER_MAX_TEMP), data.getDouble(MainActivity.INDEX_WEATHER_MIN_TEMP));
+        }
     }
 
     /**
@@ -370,19 +375,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
 
-    public void onTempSet(int hiTemp, int lowTemp) {
+    public void onTempSet(double hiTemp, double lowTemp) {
+        Log.v(TAG, "onTempSet hi" + hiTemp + " low " + lowTemp);
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/ubiquitous_watch_face_config");
 
-        putDataMapReq.getDataMap().putInt("KEY_MAJOR_TEMP", hiTemp);
-        putDataMapReq.getDataMap().putInt("KEY_MINOR_TEMP", lowTemp);
-        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+        putDataMapReq.getDataMap().getDouble("KEY_MAJOR_TEMP", hiTemp);
+        putDataMapReq.getDataMap().getDouble("KEY_MINOR_TEMP", lowTemp);
+        putDataReq = putDataMapReq.asPutDataRequest();
 
-        Wearable.DataApi.putDataItem(googleApiClient, putDataReq);
+        Wearable.DataApi.putDataItem(googleApiClient, putDataReq).setResultCallback(this);
     }
 
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "onConnected");
+        if (putDataReq != null) {
+            Wearable.DataApi.putDataItem(googleApiClient, putDataReq).setResultCallback(this);
+        }
     }
 
     @Override
@@ -397,6 +406,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onResult(@NonNull DataApi.DataItemResult dataItemResult) {
-
+        Log.e(TAG, "onResult");
+        if (dataItemResult.getStatus().isSuccess()) {
+            Log.e(TAG, "onResult success");
+        } else {
+            Log.e(TAG, "onResult fail");
+        }
     }
 }
