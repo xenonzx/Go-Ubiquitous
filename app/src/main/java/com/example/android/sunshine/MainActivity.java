@@ -40,6 +40,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, ForecastAdapter.ForecastAdapterOnClickHandler,
@@ -365,6 +367,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public void onTempSet(int hiTemp, int lowTemp) {
+        PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/ubiquitous_watch_face_config");
+
+        putDataMapReq.getDataMap().putInt("KEY_MAJOR_TEMP", hiTemp);
+        putDataMapReq.getDataMap().putInt("KEY_MINOR_TEMP", lowTemp);
+        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+
+        Wearable.DataApi.putDataItem(googleApiClient, putDataReq);
     }
 
     @Override
