@@ -18,6 +18,8 @@ package com.example.android.sunshine;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -38,14 +40,18 @@ import android.widget.ProgressBar;
 import com.example.android.sunshine.data.SunshinePreferences;
 import com.example.android.sunshine.data.WeatherContract;
 import com.example.android.sunshine.sync.SunshineSyncUtils;
+import com.example.android.sunshine.utilities.SunshineWeatherUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
+
+import java.io.ByteArrayOutputStream;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, ForecastAdapter.ForecastAdapterOnClickHandler,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
@@ -274,7 +280,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (data.getCount() != 0) {
             showWeatherDataView();
             data.moveToFirst();
-            onTempSet(data.getDouble(MainActivity.INDEX_WEATHER_MAX_TEMP), data.getDouble(MainActivity.INDEX_WEATHER_MIN_TEMP));
+
+            onTempSet(data.getDouble(MainActivity.INDEX_WEATHER_MAX_TEMP), data.getDouble(MainActivity.INDEX_WEATHER_MIN_TEMP), data.getInt(MainActivity.INDEX_WEATHER_CONDITION_ID));
         }
     }
 
@@ -378,15 +385,30 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
 
-    public void onTempSet(double hiTemp, double lowTemp) {
+    public void onTempSet(double hiTemp, double lowTemp, int weatherID) {
         Log.v(TAG, "onTempSet hi" + hiTemp + " low " + lowTemp);
+
+        int weatherImageId = SunshineWeatherUtils.getSmallArtResourceIdForWeatherCondition(weatherID);
+        Log.v(TAG, "weather Image id is " + weatherID);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.art_fog);
+        Asset asset = createAssetFromBitmap(bitmap);
+
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/ubiquitous_watch_face_config");
 
         putDataMapReq.getDataMap().putDouble("KEY_MAJOR_TEMP", hiTemp);
         putDataMapReq.getDataMap().putDouble("KEY_MINOR_TEMP", lowTemp);
+        putDataMapReq.getDataMap().putAsset("KEY_WEATHER_IMAGE", asset);
         putDataReq = putDataMapReq.asPutDataRequest();
 
         Wearable.DataApi.putDataItem(googleApiClient, putDataReq).setResultCallback(this);
+
+
+    }
+
+    private static Asset createAssetFromBitmap(Bitmap bitmap) {
+        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+        return Asset.createFromBytes(byteStream.toByteArray());
     }
 
     @Override

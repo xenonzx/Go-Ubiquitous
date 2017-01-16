@@ -21,11 +21,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -41,6 +44,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -51,6 +55,7 @@ import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -105,6 +110,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
     }
 
     private class Engine extends CanvasWatchFaceService.Engine implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        private static final long TIMEOUT_MS = 5000;
         private GoogleApiClient googleApiClient;
         //the DataApi.DataListener - this will get notified every time we change something in the data layer
         private final DataApi.DataListener onDataChangedListener = new DataApi.DataListener() {
@@ -195,6 +201,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
         float mTempImageMarginTop;
         float mTempImageMarginRight;
         float mTempMinorMarginLeft;
+        private Drawable weatherIcon;
 
         Rect tempBounds = new Rect(0, 0, 0, 0);
         /**
@@ -451,11 +458,14 @@ public class MyWatchFace extends CanvasWatchFaceService {
             String minorTemp = String.format(getString(R.string.format_temperature), (int) mDataTempMinor);
             x = boundWidth / 2 - (mTempImageWidth + mTempImageMarginRight + mMajorDegreePaint.measureText(majorTemp) + mTempMinorMarginLeft + mMinorDegreePaint.measureText(minorTemp)) / 2;
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop - mTempImageHeight + mTempImageMarginTop;
+//            Drawable d = getResources().getDrawable(R.mipmap.ic_launcher, null);
+//            d.setBounds((int) x, (int) y, (int) x + (int) mTempImageWidth, (int) y + (int) mTempImageHeight);
+//            d.draw(canvas);
 
-            Drawable d = getResources().getDrawable(R.drawable.art_rain, null);
-            d.setBounds((int) x, (int) y, (int) x + (int) mTempImageWidth, (int) y + (int) mTempImageHeight);
-            d.draw(canvas);
-
+            if (weatherIcon != null) {
+                weatherIcon.setBounds((int) x, (int) y, (int) x + (int) mTempImageWidth, (int) y + (int) mTempImageHeight);
+                weatherIcon.draw(canvas);
+            }
             //drawing Temp major
             x = x + mTempImageWidth + mTempImageMarginRight;
             y = mYOffset + mDateTopMargin + mSeparatorTopMargin + mSeparatorBottomMargin + mTempBaseToTop;
@@ -501,7 +511,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         private void processConfigurationFor(DataItem item) {
 
-            Log.v(TAG, "processConfigurationFor" +new Gson().toJson(item.getUri()));
+            Log.v(TAG, "processConfigurationFor" + new Gson().toJson(item.getUri()));
             if ("/ubiquitous_watch_face_config".equals(item.getUri().getPath())) {
                 DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
                 if (dataMap.containsKey("KEY_MAJOR_TEMP")) {
@@ -510,6 +520,14 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
                 if (dataMap.containsKey("KEY_MINOR_TEMP")) {
                     mDataTempMinor = dataMap.getDouble("KEY_MINOR_TEMP");
+                }
+                if (dataMap.containsKey("KEY_WEATHER_IMAGE")) {
+                   Log.e(TAG, "dataMap contain image");
+                    Asset asset = dataMap.getAsset("KEY_WEATHER_IMAGE");
+                    Bitmap bitmap = loadBitmapFromAsset(asset);
+                    weatherIcon = new BitmapDrawable(getResources(), bitmap);
+                } else {
+                    Log.e(TAG, "waether image is  null");
                 }
                 invalidate();
 
@@ -531,6 +549,29 @@ public class MyWatchFace extends CanvasWatchFaceService {
         @Override
         public void onConnectionFailed(ConnectionResult connectionResult) {
             Log.e(TAG, "connectionFailed GoogleAPI");
+        }
+
+        public Bitmap loadBitmapFromAsset(Asset asset) {
+            if (asset == null) {
+                throw new IllegalArgumentException("Asset must be non-null");
+            }
+            ConnectionResult result =
+                    googleApiClient.blockingConnect(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            if (!result.isSuccess()) {
+                Log.e(TAG, "loadBitmapFromAsset not sucess");
+                return null;
+            }
+            // convert asset into a file descriptor and block until it's ready
+            InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
+                    googleApiClient, asset).await().getInputStream();
+            googleApiClient.disconnect();
+
+            if (assetInputStream == null) {
+                Log.w(TAG, "Requested an unknown Asset.");
+                return null;
+            }
+            // decode the stream into a bitmap
+            return BitmapFactory.decodeStream(assetInputStream);
         }
     }
 
