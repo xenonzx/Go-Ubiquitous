@@ -49,6 +49,7 @@ import com.google.android.gms.wearable.DataItemBuffer;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
+import com.google.gson.Gson;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -110,6 +111,24 @@ public class MyWatchFace extends CanvasWatchFaceService {
             @Override
             public void onDataChanged(DataEventBuffer dataEvents) {
                 Log.v(TAG, "onDataChanged");
+
+                for (DataEvent event : dataEvents) {
+
+                    Log.d(" - onDataChanged",
+                            "Event received: " + event.getDataItem().getUri());
+
+                    String eventUri = event.getDataItem().getUri().toString();
+
+                    if (eventUri.contains("/myapp/myevent")) {
+
+                        DataMapItem dataItem = DataMapItem.fromDataItem(event.getDataItem());
+                        String[] data = dataItem.getDataMap().getStringArray("contents");
+
+                        Log.d("- onDataChanged", "Sending timeline to the listener");
+
+
+                    }
+                }
                 for (DataEvent event : dataEvents) {
                     if (event.getType() == DataEvent.TYPE_CHANGED) {
                         DataItem item = event.getDataItem();
@@ -482,7 +501,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         private void processConfigurationFor(DataItem item) {
 
-            Log.v(TAG, "processConfigurationFor");
+            Log.v(TAG, "processConfigurationFor" +new Gson().toJson(item.getUri()));
             if ("/ubiquitous_watch_face_config".equals(item.getUri().getPath())) {
                 DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
                 if (dataMap.containsKey("KEY_MAJOR_TEMP")) {
