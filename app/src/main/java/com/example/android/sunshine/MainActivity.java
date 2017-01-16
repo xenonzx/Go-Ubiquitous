@@ -15,9 +15,11 @@
  */
 package com.example.android.sunshine;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
@@ -40,6 +42,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
@@ -379,8 +382,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Log.v(TAG, "onTempSet hi" + hiTemp + " low " + lowTemp);
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/ubiquitous_watch_face_config");
 
-        putDataMapReq.getDataMap().getDouble("KEY_MAJOR_TEMP", hiTemp);
-        putDataMapReq.getDataMap().getDouble("KEY_MINOR_TEMP", lowTemp);
+        putDataMapReq.getDataMap().putDouble("KEY_MAJOR_TEMP", hiTemp);
+        putDataMapReq.getDataMap().putDouble("KEY_MINOR_TEMP", lowTemp);
         putDataReq = putDataMapReq.asPutDataRequest();
 
         Wearable.DataApi.putDataItem(googleApiClient, putDataReq).setResultCallback(this);
@@ -392,6 +395,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (putDataReq != null) {
             Wearable.DataApi.putDataItem(googleApiClient, putDataReq).setResultCallback(this);
         }
+
+        String[] myData = new String[]{"data1", "data2", "data3"};
+        new DataTask(this, myData).execute();
     }
 
     @Override
@@ -411,6 +417,35 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Log.e(TAG, "onResult success");
         } else {
             Log.e(TAG, "onResult fail");
+        }
+    }
+
+    class DataTask extends AsyncTask<Node, Void, Void> {
+
+        private final String[] contents;
+
+        Context c;
+
+        public DataTask(Context c, String[] contents) {
+            this.c = c;
+            this.contents = contents;
+
+        }
+
+        @Override
+        protected Void doInBackground(Node... nodes) {
+
+            PutDataMapRequest dataMap = PutDataMapRequest.create("/myapp/myevent");
+            dataMap.getDataMap().putStringArray("contents", contents);
+
+            PutDataRequest request = dataMap.asPutDataRequest();
+
+            DataApi.DataItemResult dataItemResult = Wearable.DataApi
+                    .putDataItem(googleApiClient, request).await();
+
+
+            Log.d(" - doInBackground", "/myapp/myevent " + getStatus());
+            return null;
         }
     }
 }
