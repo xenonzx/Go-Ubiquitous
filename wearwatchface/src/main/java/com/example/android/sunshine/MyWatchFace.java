@@ -30,6 +30,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -522,10 +523,10 @@ public class MyWatchFace extends CanvasWatchFaceService {
                     mDataTempMinor = dataMap.getDouble("KEY_MINOR_TEMP");
                 }
                 if (dataMap.containsKey("KEY_WEATHER_IMAGE")) {
-                   Log.e(TAG, "dataMap contain image");
+                    Log.e(TAG, "dataMap contain image");
                     Asset asset = dataMap.getAsset("KEY_WEATHER_IMAGE");
-                    Bitmap bitmap = loadBitmapFromAsset(asset);
-                    weatherIcon = new BitmapDrawable(getResources(), bitmap);
+                    loadBitmapFromAsset(asset);
+
                 } else {
                     Log.e(TAG, "waether image is  null");
                 }
@@ -551,27 +552,43 @@ public class MyWatchFace extends CanvasWatchFaceService {
             Log.e(TAG, "connectionFailed GoogleAPI");
         }
 
-        public Bitmap loadBitmapFromAsset(Asset asset) {
-            if (asset == null) {
-                throw new IllegalArgumentException("Asset must be non-null");
-            }
-            ConnectionResult result =
-                    googleApiClient.blockingConnect(TIMEOUT_MS, TimeUnit.MILLISECONDS);
-            if (!result.isSuccess()) {
-                Log.e(TAG, "loadBitmapFromAsset not sucess");
-                return null;
-            }
-            // convert asset into a file descriptor and block until it's ready
-            InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
-                    googleApiClient, asset).await().getInputStream();
-            googleApiClient.disconnect();
+        public void loadBitmapFromAsset(Asset asset) {
+            new BitmapWorkerTask().execute(asset);
+        }
 
-            if (assetInputStream == null) {
-                Log.w(TAG, "Requested an unknown Asset.");
-                return null;
+        class BitmapWorkerTask extends AsyncTask<Asset, Void, Bitmap> {
+            Asset asset;
+
+            @Override
+            protected Bitmap doInBackground(Asset... params) {
+                asset = params[0];
+                if (asset == null) {
+                    throw new IllegalArgumentException("Asset must be non-null");
+                }
+                ConnectionResult result = googleApiClient.blockingConnect(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                if (!result.isSuccess()) {
+                    Log.e(TAG, "loadBitmapFromAsset not sucess");
+                    return null;
+                }
+                // convert asset into a file descriptor and block until it's ready
+                InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
+                        googleApiClient, asset).await().getInputStream();
+                googleApiClient.disconnect();
+
+                if (assetInputStream == null) {
+                    Log.w(TAG, "Requested an unknown Asset.");
+                    return null;
+                }
+                // decode the stream into a bitmap
+                return BitmapFactory.decodeStream(assetInputStream);
             }
-            // decode the stream into a bitmap
-            return BitmapFactory.decodeStream(assetInputStream);
+
+            @Override
+            protected void onPostExecute(Bitmap bitmap) {
+                super.onPostExecute(bitmap);
+                weatherIcon = new BitmapDrawable(getResources(), bitmap);
+                invalidate();
+            }
         }
     }
 
