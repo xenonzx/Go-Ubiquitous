@@ -19,15 +19,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatDrawableManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -390,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         int weatherImageId = SunshineWeatherUtils.getSmallArtResourceIdForWeatherCondition(weatherID);
         Log.v(TAG, "weather Image id is " + weatherID);
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.art_fog);
+        Bitmap bitmap = getBitmapFromVectorDrawable(MainActivity.this,weatherImageId);
         Asset asset = createAssetFromBitmap(bitmap);
 
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/ubiquitous_watch_face_config");
@@ -405,10 +409,28 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     }
 
-    private static Asset createAssetFromBitmap(Bitmap bitmap) {
+    private Asset createAssetFromBitmap(Bitmap bitmap) {
+        Log.v(TAG, "createAssetFromBitmap");
+
         final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
         return Asset.createFromBytes(byteStream.toByteArray());
+    }
+
+    public Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
+        Log.v(TAG, "getBitmapFromVectorDrawable");
+        Drawable drawable = AppCompatDrawableManager.get().getDrawable(context, drawableId);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            drawable = (DrawableCompat.wrap(drawable)).mutate();
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
     }
 
     @Override
