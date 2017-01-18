@@ -191,6 +191,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
         };
         float mXOffset;
         float mYOffset;
+        float mYOffsetSmall;
+        float mYOffsetMed;
+        float mYOffsetHigh;
         float mDateTopMargin;
         float mSeparatorTopMargin;
         float mSeparatorBottomMargin;
@@ -203,6 +206,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
         float mTempImageMarginRight;
         float mTempMinorMarginLeft;
         private Drawable weatherIcon;
+        final float LARGE_HEIGHT = 360;
+        final float MEDIUM_HEIGHT = 320;
 
         Rect tempBounds = new Rect(0, 0, 0, 0);
         /**
@@ -227,7 +232,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
                     .setAcceptsTapEvents(true)
                     .build());
             Resources resources = MyWatchFace.this.getResources();
-            mYOffset = resources.getDimension(R.dimen.digital_y_offset);
+            mYOffsetSmall = resources.getDimension(R.dimen.digital_y_offset_small);
+            mYOffsetMed = resources.getDimension(R.dimen.digital_y_offset_medium);
+            mYOffsetHigh = resources.getDimension(R.dimen.digital_y_offset_large);
             mDateTopMargin = resources.getDimension(R.dimen.date_top_margin);
 
             mSeparatorTopMargin = resources.getDimension(R.dimen.line_separator_top_margin);
@@ -265,6 +272,20 @@ public class MyWatchFace extends CanvasWatchFaceService {
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
             releaseGoogleApiClient();
             super.onDestroy();
+        }
+
+        public float getYOffset(float borderHeight) {
+            Log.v(TAG, "borderHeight" + borderHeight);
+            float offset = 0;
+            if (borderHeight >= LARGE_HEIGHT) {
+                offset = mYOffsetHigh;
+            } else if (borderHeight >= MEDIUM_HEIGHT) {
+                offset = mYOffsetMed;
+            } else {
+                offset = mYOffsetSmall;
+            }
+            Log.v(TAG, "offset" + offset);
+            return offset;
         }
 
         private Paint createTextPaint(int textColor) {
@@ -433,8 +454,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             String minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE));
 
             float x = boundWidth / 2 - (mHourPaint.measureText(hours) + mHourPaint.measureText(colon) + mMinutePaint.measureText(minutes)) / 2;
-            Log.e(TAG, "Height" + boundheight);
-            Log.e(TAG, "mYOffset" + mYOffset);
+            mYOffset = getYOffset(boundheight);
             float y = mYOffset;
             canvas.drawText(hours, x, y, mHourPaint);
             x += mHourPaint.measureText(hours);
