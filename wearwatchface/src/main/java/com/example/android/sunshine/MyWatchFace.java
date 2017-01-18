@@ -433,6 +433,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
             String minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE));
 
             float x = boundWidth / 2 - (mHourPaint.measureText(hours) + mHourPaint.measureText(colon) + mMinutePaint.measureText(minutes)) / 2;
+            Log.e(TAG, "Height" + boundheight);
+            Log.e(TAG, "mYOffset" + mYOffset);
             float y = mYOffset;
             canvas.drawText(hours, x, y, mHourPaint);
             x += mHourPaint.measureText(hours);
